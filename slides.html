@@ -1,0 +1,3338 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Query Monitor & WordPress Performance Workshop</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, Oxygen, Ubuntu, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #333;
+        overflow: hidden;
+      }
+
+      .slides-container {
+        height: 100vh;
+        display: flex;
+        scroll-snap-type: x mandatory;
+        overflow-x: auto;
+        overflow-y: hidden;
+      }
+
+      .slide {
+        min-width: 100vw;
+        height: 100vh;
+        scroll-snap-align: start;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem;
+        background: white;
+        position: relative;
+      }
+
+      .slide:nth-child(odd) {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      }
+
+      .slide-number {
+        position: absolute;
+        top: 2rem;
+        right: 2rem;
+        font-size: 1.2rem;
+        color: #666;
+        font-weight: 300;
+      }
+
+      h1 {
+        font-size: 4rem;
+        margin-bottom: 2rem;
+        text-align: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+      }
+
+      h2 {
+        font-size: 3rem;
+        margin-bottom: 2rem;
+        color: #2d3748;
+        text-align: center;
+      }
+
+      h3 {
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+        color: #4a5568;
+      }
+
+      .content {
+        max-width: 1200px;
+        width: 100%;
+        margin: 0 auto;
+      }
+
+      ul {
+        list-style: none;
+        font-size: 1.5rem;
+        line-height: 2.5;
+      }
+
+      pre.code-block {
+        background: #1a202c !important;
+        color: #68d391 !important;
+        padding: 1rem !important;
+        border-radius: 1rem !important;
+        font-family: "Courier New", monospace !important;
+        font-size: 0.9rem !important;
+        margin: 1.5rem 0 !important;
+        overflow-x: auto !important;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
+        white-space: pre !important;
+        line-height: 1.5 !important;
+        text-align: left !important;
+      }
+
+      pre.code-block code {
+        font-family: inherit;
+        font-size: inherit;
+        color: inherit;
+        background: none;
+        padding: 0;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin: 2rem 0;
+      }
+
+      .stat-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        transition: transform 0.3s;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-5px);
+      }
+
+      .stat-number {
+        font-size: 3rem;
+        font-weight: bold;
+        color: #667eea;
+      }
+
+      .stat-label {
+        font-size: 1.2rem;
+        color: #718096;
+        margin-top: 0.5rem;
+      }
+
+      .highlight {
+        background: linear-gradient(120deg, #fbbf24 0%, #fbbf24 100%);
+        background-repeat: no-repeat;
+        background-size: 100% 40%;
+        background-position: 0 60%;
+        padding: 0 0.3rem;
+      }
+
+      .warning-box {
+        background: #fed7d7;
+        border-left: 4px solid #f56565;
+        padding: 1.5rem;
+        margin: 2rem 0;
+        border-radius: 0.5rem;
+        font-size: 1.3rem;
+      }
+
+      .success-box {
+        background: #c6f6d5;
+        border-left: 4px solid #48bb78;
+        padding: 1.5rem;
+        margin: 2rem 0;
+        border-radius: 0.5rem;
+        font-size: 1.3rem;
+      }
+
+      .demo-tag {
+        display: inline-block;
+        background: #667eea;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        font-size: 1rem;
+        font-weight: bold;
+        margin: 1rem 0;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .navigation {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        display: flex;
+        gap: 0.5rem;
+        z-index: 1000;
+      }
+
+      .nav-btn {
+        background: linear-gradient(135deg, #873eff 0%, #720eec 100%);
+        color: white;
+        border: none;
+        padding: 0.6rem 1.2rem;
+        border-radius: 2rem;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+        opacity: 0.7;
+        box-shadow: 0 4px 15px rgba(114, 14, 236, 0.2);
+      }
+
+      .nav-btn:hover {
+        opacity: 1;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(114, 14, 236, 0.3);
+      }
+
+      .progress-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 4px;
+        background: #667eea;
+        transition: width 0.3s;
+        z-index: 1000;
+      }
+
+      .two-column {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        align-items: center;
+      }
+
+      .icon-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        margin: 2rem 0;
+      }
+
+      .icon-item {
+        text-align: center;
+        padding: 2rem;
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .icon-item::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        transform: scaleX(0);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .icon-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(102, 126, 234, 0.15);
+      }
+
+      .icon-item:hover::before {
+        transform: scaleX(1);
+      }
+
+      .icon-item .icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: #667eea;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 60px;
+      }
+
+      .icon-item h3 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+      }
+
+      .icon-item p {
+        font-size: 0.95rem;
+        color: #718096;
+        line-height: 1.4;
+      }
+
+      .timeline {
+        position: relative;
+        padding: 2rem 0;
+      }
+
+      .timeline-item {
+        display: flex;
+        align-items: center;
+        margin: 2rem 0;
+        position: relative;
+      }
+
+      .timeline-time {
+        background: #667eea;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        margin-right: 2rem;
+        min-width: 120px;
+        text-align: center;
+      }
+
+      .timeline-content {
+        flex: 1;
+        font-size: 1.3rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="progress-bar" id="progressBar"></div>
+
+    <div class="slides-container" id="slidesContainer">
+      <!-- Slide 1: Title -->
+      <div class="slide">
+        <span class="slide-number">1 / 20</span>
+        <div
+          class="content"
+          style="
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+          "
+        >
+          <div style="text-align: center">
+            <div
+              style="
+                display: inline-block;
+                margin-bottom: 2rem;
+                position: relative;
+              "
+            >
+              <svg width="120" height="120" style="display: block">
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="50"
+                  fill="none"
+                  stroke="#D1C1FF"
+                  stroke-width="8"
+                  opacity="0.3"
+                />
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="50"
+                  fill="none"
+                  stroke="url(#gradient)"
+                  stroke-width="8"
+                  stroke-dasharray="314"
+                  stroke-dashoffset="314"
+                  transform="rotate(-90 60 60)"
+                  style="animation: drawCircle 2s ease-in-out infinite"
+                ></circle>
+                <defs>
+                  <linearGradient
+                    id="gradient"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="100%"
+                  >
+                    <stop
+                      offset="0%"
+                      style="stop-color: #873eff; stop-opacity: 1"
+                    />
+                    <stop
+                      offset="50%"
+                      style="stop-color: #720eec; stop-opacity: 1"
+                    />
+                    <stop
+                      offset="100%"
+                      style="stop-color: #5007aa; stop-opacity: 1"
+                    />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <i
+                class="fas fa-tachometer-alt"
+                style="
+                  position: absolute;
+                  top: 50%;
+                  left: 50%;
+                  transform: translate(-50%, -50%);
+                  font-size: 2.5rem;
+                  color: #873eff;
+                "
+              >
+              </i>
+            </div>
+            <style>
+              @keyframes drawCircle {
+                0% {
+                  stroke-dashoffset: 314;
+                }
+                50% {
+                  stroke-dashoffset: 0;
+                }
+                100% {
+                  stroke-dashoffset: -314;
+                }
+              }
+            </style>
+            <h1
+              style="
+                font-size: 3.5rem;
+                margin-bottom: 0.5rem;
+                background: linear-gradient(
+                  135deg,
+                  #873eff 0%,
+                  #720eec 50%,
+                  #5007aa 100%
+                );
+                -webkit-background-clip: text;
+                background-clip: text;
+                color: transparent;
+                font-weight: bold;
+                line-height: 1.2;
+              "
+            >
+              From Issues to Insights
+            </h1>
+            <h2
+              style="
+                font-size: 2rem;
+                color: #720eec;
+                margin-bottom: 2rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 1rem;
+              "
+            >
+              <span
+                style="
+                  width: 60px;
+                  height: 2px;
+                  background: linear-gradient(90deg, transparent, #d1c1ff);
+                "
+              ></span>
+              Debugging with Query Monitor
+              <span
+                style="
+                  width: 60px;
+                  height: 2px;
+                  background: linear-gradient(90deg, #d1c1ff, transparent);
+                "
+              ></span>
+            </h2>
+            <div style="margin: 2rem 0">
+              <p
+                style="
+                  font-size: 1.5rem;
+                  color: #5007aa;
+                  font-weight: 600;
+                  margin-bottom: 1.5rem;
+                  letter-spacing: -0.5px;
+                  white-space: nowrap;
+                "
+              >
+                A Practical Workshop for Happiness Engineers
+              </p>
+              <div
+                style="
+                  display: inline-flex;
+                  align-items: center;
+                  gap: 0.5rem;
+                  padding: 0.8rem 1.8rem;
+                  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+                  border-radius: 2rem;
+                  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+                  border: 2px solid #d1c1ff;
+                "
+              >
+                <i
+                  class="fas fa-rocket"
+                  style="color: #873eff; font-size: 1.2rem"
+                ></i>
+                <span style="color: #333; font-size: 1.1rem; font-weight: 500"
+                  >Transform Your Debugging Skills</span
+                >
+              </div>
+            </div>
+            <div
+              style="
+                margin-top: 2.5rem;
+                display: flex;
+                gap: 4rem;
+                justify-content: center;
+                align-items: center;
+              "
+            >
+              <div
+                style="
+                  text-align: center;
+                  animation: float 3s ease-in-out infinite;
+                "
+              >
+                <div
+                  style="
+                    width: 70px;
+                    height: 70px;
+                    border-radius: 50%;
+                    background: linear-gradient(
+                      135deg,
+                      #873eff 0%,
+                      #720eec 100%
+                    );
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    box-shadow: 0 8px 25px rgba(114, 14, 236, 0.25);
+                    margin: 0 auto 0.6rem;
+                  "
+                >
+                  <i
+                    class="fas fa-code"
+                    style="color: white; font-size: 1.5rem"
+                  ></i>
+                </div>
+                <span
+                  style="color: #5007aa; font-weight: 600; font-size: 0.95rem"
+                  >Live Demos</span
+                >
+              </div>
+              <div
+                style="
+                  text-align: center;
+                  animation: float 3s ease-in-out infinite 0.5s;
+                "
+              >
+                <div
+                  style="
+                    width: 70px;
+                    height: 70px;
+                    border-radius: 50%;
+                    background: linear-gradient(
+                      135deg,
+                      #873eff 0%,
+                      #720eec 100%
+                    );
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    box-shadow: 0 8px 25px rgba(114, 14, 236, 0.25);
+                    margin: 0 auto 0.6rem;
+                  "
+                >
+                  <i
+                    class="fas fa-tools"
+                    style="color: white; font-size: 1.5rem"
+                  ></i>
+                </div>
+                <span
+                  style="color: #5007aa; font-weight: 600; font-size: 0.95rem"
+                  >Practical Tips</span
+                >
+              </div>
+              <div
+                style="
+                  text-align: center;
+                  animation: float 3s ease-in-out infinite 1s;
+                "
+              >
+                <div
+                  style="
+                    width: 70px;
+                    height: 70px;
+                    border-radius: 50%;
+                    background: linear-gradient(
+                      135deg,
+                      #873eff 0%,
+                      #720eec 100%
+                    );
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    box-shadow: 0 8px 25px rgba(114, 14, 236, 0.25);
+                    margin: 0 auto 0.6rem;
+                  "
+                >
+                  <i
+                    class="fas fa-chart-line"
+                    style="color: white; font-size: 1.5rem"
+                  ></i>
+                </div>
+                <span
+                  style="color: #5007aa; font-weight: 600; font-size: 0.95rem"
+                  >Real Solutions</span
+                >
+              </div>
+            </div>
+            <style>
+              @keyframes float {
+                0%,
+                100% {
+                  transform: translateY(0);
+                }
+                50% {
+                  transform: translateY(-10px);
+                }
+              }
+            </style>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 2: Agenda -->
+      <div class="slide">
+        <span class="slide-number">2 / 20</span>
+        <div class="content">
+          <h2>Today's Journey</h2>
+          <p
+            style="
+              text-align: center;
+              font-size: 1.3rem;
+              color: #666;
+              margin: -1rem 0 2rem 0;
+            "
+          >
+            A hands-on exploration of WordPress performance debugging and
+            optimization
+          </p>
+          <div class="timeline" style="position: relative; padding: 2rem 0">
+            <div
+              style="
+                position: absolute;
+                left: 50%;
+                top: 0;
+                bottom: 0;
+                width: 3px;
+                background: linear-gradient(
+                  180deg,
+                  #873eff 0%,
+                  #720eec 50%,
+                  #5007aa 100%
+                );
+                transform: translateX(-50%);
+              "
+            ></div>
+            <div
+              class="timeline-item"
+              style="
+                display: flex;
+                align-items: center;
+                margin-bottom: 2rem;
+                position: relative;
+              "
+            >
+              <div style="flex: 1; text-align: right; padding-right: 3rem">
+                <div
+                  class="timeline-time"
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      #d1c1ff 0%,
+                      #873eff 100%
+                    );
+                    color: white;
+                    padding: 0.5rem 1rem;
+                    border-radius: 2rem;
+                    display: inline-block;
+                    font-weight: bold;
+                  "
+                >
+                  0:00 - 0:05
+                </div>
+              </div>
+              <div
+                style="
+                  position: absolute;
+                  left: 50%;
+                  transform: translateX(-50%);
+                  width: 20px;
+                  height: 20px;
+                  background: white;
+                  border: 4px solid #873eff;
+                  border-radius: 50%;
+                  z-index: 1;
+                "
+              ></div>
+              <div style="flex: 1; padding-left: 3rem">
+                <div
+                  class="timeline-content"
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      #f3f4f6 0%,
+                      #e5e7eb 100%
+                    );
+                    padding: 1rem 1.5rem;
+                    border-radius: 1rem;
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                    transition: all 0.3s ease;
+                    cursor: pointer;
+                  "
+                  onmouseover="this.style.transform='translateX(5px)'; this.style.boxShadow='0 6px 20px rgba(135, 62, 255, 0.3)'"
+                  onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.1)'"
+                >
+                  <i
+                    class="fas fa-handshake"
+                    style="color: #873eff; margin-right: 0.5rem"
+                  ></i>
+                  Welcome & Introduction
+                </div>
+              </div>
+            </div>
+            <div
+              class="timeline-item"
+              style="
+                display: flex;
+                align-items: center;
+                margin-bottom: 2rem;
+                position: relative;
+              "
+            >
+              <div style="flex: 1; text-align: right; padding-right: 3rem">
+                <div
+                  class="timeline-content"
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      #f3f4f6 0%,
+                      #e5e7eb 100%
+                    );
+                    padding: 1rem 1.5rem;
+                    border-radius: 1rem;
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                    transition: all 0.3s ease;
+                    cursor: pointer;
+                  "
+                  onmouseover="this.style.transform='translateX(-5px)'; this.style.boxShadow='0 6px 20px rgba(135, 62, 255, 0.3)'"
+                  onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.1)'"
+                >
+                  <i
+                    class="fas fa-search"
+                    style="color: #873eff; margin-right: 0.5rem"
+                  ></i>
+                  Query Monitor Deep Dive
+                </div>
+              </div>
+              <div
+                style="
+                  position: absolute;
+                  left: 50%;
+                  transform: translateX(-50%);
+                  width: 20px;
+                  height: 20px;
+                  background: white;
+                  border: 4px solid #873eff;
+                  border-radius: 50%;
+                  z-index: 1;
+                "
+              ></div>
+              <div style="flex: 1; padding-left: 3rem">
+                <div
+                  class="timeline-time"
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      #d1c1ff 0%,
+                      #873eff 100%
+                    );
+                    color: white;
+                    padding: 0.5rem 1rem;
+                    border-radius: 2rem;
+                    display: inline-block;
+                    font-weight: bold;
+                  "
+                >
+                  0:05 - 0:25
+                </div>
+              </div>
+            </div>
+            <div
+              class="timeline-item"
+              style="
+                display: flex;
+                align-items: center;
+                margin-bottom: 2rem;
+                position: relative;
+              "
+            >
+              <div style="flex: 1; text-align: right; padding-right: 3rem">
+                <div
+                  class="timeline-time"
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      #d1c1ff 0%,
+                      #873eff 100%
+                    );
+                    color: white;
+                    padding: 0.5rem 1rem;
+                    border-radius: 2rem;
+                    display: inline-block;
+                    font-weight: bold;
+                  "
+                >
+                  0:25 - 0:40
+                </div>
+              </div>
+              <div
+                style="
+                  position: absolute;
+                  left: 50%;
+                  transform: translateX(-50%);
+                  width: 20px;
+                  height: 20px;
+                  background: white;
+                  border: 4px solid #873eff;
+                  border-radius: 50%;
+                  z-index: 1;
+                "
+              ></div>
+              <div style="flex: 1; padding-left: 3rem">
+                <div
+                  class="timeline-content"
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      #f3f4f6 0%,
+                      #e5e7eb 100%
+                    );
+                    padding: 1rem 1.5rem;
+                    border-radius: 1rem;
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                    transition: all 0.3s ease;
+                    cursor: pointer;
+                  "
+                  onmouseover="this.style.transform='translateX(5px)'; this.style.boxShadow='0 6px 20px rgba(135, 62, 255, 0.3)'"
+                  onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.1)'"
+                >
+                  <i
+                    class="fas fa-terminal"
+                    style="color: #873eff; margin-right: 0.5rem"
+                  ></i>
+                  Debugging Without Admin Access
+                </div>
+              </div>
+            </div>
+            <div
+              class="timeline-item"
+              style="
+                display: flex;
+                align-items: center;
+                margin-bottom: 2rem;
+                position: relative;
+              "
+            >
+              <div style="flex: 1; text-align: right; padding-right: 3rem">
+                <div
+                  class="timeline-content"
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      #f3f4f6 0%,
+                      #e5e7eb 100%
+                    );
+                    padding: 1rem 1.5rem;
+                    border-radius: 1rem;
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                    transition: all 0.3s ease;
+                    cursor: pointer;
+                  "
+                  onmouseover="this.style.transform='translateX(-5px)'; this.style.boxShadow='0 6px 20px rgba(135, 62, 255, 0.3)'"
+                  onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.1)'"
+                >
+                  <i
+                    class="fas fa-shopping-cart"
+                    style="color: #873eff; margin-right: 0.5rem"
+                  ></i>
+                  WooCommerce Optimization
+                </div>
+              </div>
+              <div
+                style="
+                  position: absolute;
+                  left: 50%;
+                  transform: translateX(-50%);
+                  width: 20px;
+                  height: 20px;
+                  background: white;
+                  border: 4px solid #873eff;
+                  border-radius: 50%;
+                  z-index: 1;
+                "
+              ></div>
+              <div style="flex: 1; padding-left: 3rem">
+                <div
+                  class="timeline-time"
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      #d1c1ff 0%,
+                      #873eff 100%
+                    );
+                    color: white;
+                    padding: 0.5rem 1rem;
+                    border-radius: 2rem;
+                    display: inline-block;
+                    font-weight: bold;
+                  "
+                >
+                  0:40 - 0:55
+                </div>
+              </div>
+            </div>
+            <div
+              class="timeline-item"
+              style="display: flex; align-items: center; position: relative"
+            >
+              <div style="flex: 1; text-align: right; padding-right: 3rem">
+                <div
+                  class="timeline-time"
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      #d1c1ff 0%,
+                      #873eff 100%
+                    );
+                    color: white;
+                    padding: 0.5rem 1rem;
+                    border-radius: 2rem;
+                    display: inline-block;
+                    font-weight: bold;
+                  "
+                >
+                  0:55 - 1:00
+                </div>
+              </div>
+              <div
+                style="
+                  position: absolute;
+                  left: 50%;
+                  transform: translateX(-50%);
+                  width: 20px;
+                  height: 20px;
+                  background: white;
+                  border: 4px solid #873eff;
+                  border-radius: 50%;
+                  z-index: 1;
+                "
+              ></div>
+              <div style="flex: 1; padding-left: 3rem">
+                <div
+                  class="timeline-content"
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      #f3f4f6 0%,
+                      #e5e7eb 100%
+                    );
+                    padding: 1rem 1.5rem;
+                    border-radius: 1rem;
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                    transition: all 0.3s ease;
+                    cursor: pointer;
+                  "
+                  onmouseover="this.style.transform='translateX(5px)'; this.style.boxShadow='0 6px 20px rgba(135, 62, 255, 0.3)'"
+                  onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.1)'"
+                >
+                  <i
+                    class="fas fa-question-circle"
+                    style="color: #873eff; margin-right: 0.5rem"
+                  ></i>
+                  Q&A & Resources
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 3: The Problem -->
+      <div class="slide">
+        <span class="slide-number">3 / 20</span>
+        <div class="content">
+          <h2>The Performance Crisis</h2>
+          <p
+            style="
+              text-align: center;
+              font-size: 1.3rem;
+              color: #666;
+              margin: -1rem 0 2rem 0;
+            "
+          >
+            The harsh reality of web performance that costs businesses millions
+            every year
+          </p>
+          <div
+            class="stats-grid"
+            style="
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+              gap: 2rem;
+              margin: 3rem 0;
+            "
+          >
+            <div
+              class="stat-card"
+              style="
+                background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+                border: 2px solid #ef4444;
+                padding: 2rem;
+                border-radius: 1rem;
+                text-align: center;
+                transition: all 0.3s ease;
+                cursor: pointer;
+              "
+              onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 30px rgba(239, 68, 68, 0.3)'"
+              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'"
+            >
+              <i
+                class="fas fa-user-times"
+                style="
+                  font-size: 2.5rem;
+                  color: #ef4444;
+                  margin-bottom: 1rem;
+                  display: block;
+                "
+              ></i>
+              <div
+                class="stat-number"
+                style="
+                  font-size: 3rem;
+                  font-weight: bold;
+                  color: #ef4444;
+                  margin-bottom: 0.5rem;
+                "
+              >
+                53%
+              </div>
+              <div class="stat-label" style="font-size: 1rem; color: #7f1d1d">
+                of users abandon sites that take > 3 seconds
+              </div>
+            </div>
+            <div
+              class="stat-card"
+              style="
+                background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+                border: 2px solid #f97316;
+                padding: 2rem;
+                border-radius: 1rem;
+                text-align: center;
+                transition: all 0.3s ease;
+                cursor: pointer;
+              "
+              onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 30px rgba(249, 115, 22, 0.3)'"
+              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'"
+            >
+              <i
+                class="fas fa-tachometer-alt"
+                style="
+                  font-size: 2.5rem;
+                  color: #f97316;
+                  margin-bottom: 1rem;
+                  display: block;
+                "
+              ></i>
+              <div
+                class="stat-number"
+                style="
+                  font-size: 3rem;
+                  font-weight: bold;
+                  color: #f97316;
+                  margin-bottom: 0.5rem;
+                "
+              >
+                40%
+              </div>
+              <div class="stat-label" style="font-size: 1rem; color: #7c2d12">
+                of WordPress sites are "slow"
+              </div>
+            </div>
+            <div
+              class="stat-card"
+              style="
+                background: linear-gradient(135deg, #fde68a 0%, #fcd34d 100%);
+                border: 2px solid #f59e0b;
+                padding: 2rem;
+                border-radius: 1rem;
+                text-align: center;
+                transition: all 0.3s ease;
+                cursor: pointer;
+              "
+              onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 30px rgba(245, 158, 11, 0.3)'"
+              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'"
+            >
+              <i
+                class="fas fa-chart-down"
+                style="
+                  font-size: 2.5rem;
+                  color: #f59e0b;
+                  margin-bottom: 1rem;
+                  display: block;
+                "
+              ></i>
+              <div
+                class="stat-number"
+                style="
+                  font-size: 3rem;
+                  font-weight: bold;
+                  color: #f59e0b;
+                  margin-bottom: 0.5rem;
+                "
+              >
+                7%
+              </div>
+              <div class="stat-label" style="font-size: 1rem; color: #78350f">
+                conversion loss per second of delay
+              </div>
+            </div>
+          </div>
+          <div
+            class="warning-box"
+            style="
+              background: linear-gradient(135deg, #2c045d 0%, #5007aa 100%);
+              color: white;
+              padding: 1.5rem 2rem;
+              border-radius: 1rem;
+              text-align: center;
+              font-size: 1.2rem;
+              margin-top: 3rem;
+              box-shadow: 0 10px 30px rgba(80, 7, 170, 0.3);
+            "
+          >
+            <i
+              class="fas fa-exclamation-triangle"
+              style="color: #fbbf24; margin-right: 0.5rem"
+            ></i>
+            <strong>Reality Check:</strong> Most developers guess at performance
+            issues instead of measuring them
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 4: Query Monitor Introduction -->
+      <div class="slide">
+        <span class="slide-number">4 / 20</span>
+        <div class="content">
+          <h2>Enter Query Monitor</h2>
+          <p
+            style="
+              text-align: center;
+              font-size: 1.3rem;
+              color: #666;
+              margin: -1rem 0 2rem 0;
+            "
+          >
+            Your Swiss Army knife for WordPress debugging - see everything
+            happening under the hood
+          </p>
+          <div class="two-column" style="gap: 3rem">
+            <div
+              style="
+                background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+                padding: 2rem;
+                border-radius: 1rem;
+                border-left: 4px solid #873eff;
+              "
+            >
+              <h3
+                style="
+                  color: #873eff;
+                  margin-bottom: 1.5rem;
+                  display: flex;
+                  align-items: center;
+                  gap: 0.5rem;
+                "
+              >
+                <i class="fas fa-cogs" style="font-size: 1.5rem"></i>
+                What It Does
+              </h3>
+              <ul style="list-style: none; padding: 0; margin: 0">
+                <li
+                  style="
+                    margin-bottom: 0.8rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.8rem;
+                  "
+                >
+                  <i
+                    class="fas fa-database"
+                    style="color: #873eff; font-size: 1.1rem; width: 1.5rem"
+                  ></i>
+                  <span style="font-size: 1.1rem"
+                    >Profiles database queries</span
+                  >
+                </li>
+                <li
+                  style="
+                    margin-bottom: 0.8rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.8rem;
+                  "
+                >
+                  <i
+                    class="fas fa-bug"
+                    style="color: #873eff; font-size: 1.1rem; width: 1.5rem"
+                  ></i>
+                  <span style="font-size: 1.1rem">Tracks PHP errors</span>
+                </li>
+                <li
+                  style="
+                    margin-bottom: 0.8rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.8rem;
+                  "
+                >
+                  <i
+                    class="fas fa-network-wired"
+                    style="color: #873eff; font-size: 1.1rem; width: 1.5rem"
+                  ></i>
+                  <span style="font-size: 1.1rem">Monitors HTTP requests</span>
+                </li>
+                <li
+                  style="
+                    margin-bottom: 0.8rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.8rem;
+                  "
+                >
+                  <i
+                    class="fas fa-link"
+                    style="color: #873eff; font-size: 1.1rem; width: 1.5rem"
+                  ></i>
+                  <span style="font-size: 1.1rem"
+                    >Analyzes hooks & actions</span
+                  >
+                </li>
+                <li style="display: flex; align-items: center; gap: 0.8rem">
+                  <i
+                    class="fas fa-memory"
+                    style="color: #873eff; font-size: 1.1rem; width: 1.5rem"
+                  ></i>
+                  <span style="font-size: 1.1rem">Measures memory usage</span>
+                </li>
+              </ul>
+            </div>
+            <div
+              style="
+                background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+                padding: 2rem;
+                border-radius: 1rem;
+                border-left: 4px solid #f59e0b;
+              "
+            >
+              <h3
+                style="
+                  color: #f59e0b;
+                  margin-bottom: 1.5rem;
+                  display: flex;
+                  align-items: center;
+                  gap: 0.5rem;
+                "
+              >
+                <i class="fas fa-star" style="font-size: 1.5rem"></i>
+                Why It Matters
+              </h3>
+              <ul style="list-style: none; padding: 0; margin: 0">
+                <li
+                  style="
+                    margin-bottom: 0.8rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.8rem;
+                  "
+                >
+                  <i
+                    class="fas fa-check-circle"
+                    style="color: #f59e0b; font-size: 1.1rem; width: 1.5rem"
+                  ></i>
+                  <span style="font-size: 1.1rem">No more guessing</span>
+                </li>
+                <li
+                  style="
+                    margin-bottom: 0.8rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.8rem;
+                  "
+                >
+                  <i
+                    class="fas fa-crosshairs"
+                    style="color: #f59e0b; font-size: 1.1rem; width: 1.5rem"
+                  ></i>
+                  <span style="font-size: 1.1rem">Find exact bottlenecks</span>
+                </li>
+                <li
+                  style="
+                    margin-bottom: 0.8rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.8rem;
+                  "
+                >
+                  <i
+                    class="fas fa-layer-group"
+                    style="color: #f59e0b; font-size: 1.1rem; width: 1.5rem"
+                  ></i>
+                  <span style="font-size: 1.1rem">See full stack traces</span>
+                </li>
+                <li
+                  style="
+                    margin-bottom: 0.8rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.8rem;
+                  "
+                >
+                  <i
+                    class="fas fa-puzzle-piece"
+                    style="color: #f59e0b; font-size: 1.1rem; width: 1.5rem"
+                  ></i>
+                  <span style="font-size: 1.1rem"
+                    >Identify plugin conflicts</span
+                  >
+                </li>
+                <li style="display: flex; align-items: center; gap: 0.8rem">
+                  <i
+                    class="fas fa-rocket"
+                    style="color: #f59e0b; font-size: 1.1rem; width: 1.5rem"
+                  ></i>
+                  <span style="font-size: 1.1rem"
+                    >Optimize with confidence</span
+                  >
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 5: Key Panels -->
+      <div class="slide">
+        <span class="slide-number">5 / 20</span>
+        <div class="content">
+          <h2>Query Monitor Panels</h2>
+          <p
+            style="
+              text-align: center;
+              font-size: 1.3rem;
+              color: #666;
+              margin: -1rem 0 2rem 0;
+            "
+          >
+            Essential debugging tools at your fingertips - each panel reveals
+            critical performance insights
+          </p>
+          <div class="icon-grid">
+            <div class="icon-item">
+              <div class="icon"><i class="fas fa-tachometer-alt"></i></div>
+              <h3>Overview</h3>
+              <p>Page generation time, memory, queries</p>
+            </div>
+            <div class="icon-item">
+              <div class="icon"><i class="fas fa-database"></i></div>
+              <h3>Queries</h3>
+              <p>All database queries with timing</p>
+            </div>
+            <div class="icon-item">
+              <div class="icon">
+                <i class="fas fa-exclamation-triangle"></i>
+              </div>
+              <h3>PHP Errors</h3>
+              <p>Warnings, notices, deprecations</p>
+            </div>
+            <div class="icon-item">
+              <div class="icon"><i class="fas fa-link"></i></div>
+              <h3>Hooks</h3>
+              <p>Actions and filters execution</p>
+            </div>
+            <div class="icon-item">
+              <div class="icon"><i class="fas fa-globe"></i></div>
+              <h3>HTTP API</h3>
+              <p>External API calls</p>
+            </div>
+            <div class="icon-item">
+              <div class="icon"><i class="fas fa-file-code"></i></div>
+              <h3>Assets</h3>
+              <p>Scripts and styles</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 6: The N+1 Problem -->
+      <div class="slide">
+        <span class="slide-number">6 / 20</span>
+        <div class="content">
+          <h2>The Infamous N+1 Problem</h2>
+          <p
+            style="
+              text-align: center;
+              font-size: 1.3rem;
+              color: #666;
+              margin: -1rem 0 2rem 0;
+            "
+          >
+            The most common performance killer in WordPress - running queries
+            inside loops
+          </p>
+          <div style="text-align: center; margin: 1.5rem 0">
+            <span
+              style="
+                display: inline-block;
+                background: #667eea;
+                color: white;
+                padding: 0.75rem 2rem;
+                border-radius: 50px;
+                font-size: 1rem;
+                font-weight: 600;
+                letter-spacing: 0.05em;
+                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+              "
+            >
+              LIVE DEMO
+            </span>
+          </div>
+          <pre
+            class="code-block"
+            style="
+              white-space: pre;
+              line-height: 1.5;
+              text-align: left;
+              padding: 1rem;
+              font-size: 0.9rem;
+              margin: 1.5rem 0;
+              background: #1a202c;
+              color: #68d391;
+              border-radius: 1rem;
+              overflow-x: auto;
+            "
+          ><code><span style="color: #68d391">// BAD: N+1 Queries</span>
+<span style="color: #f6ad55">foreach</span> ( <span style="color: #b794f6">$posts</span> <span style="color: #f6ad55">as</span> <span style="color: #b794f6">$post</span> ) {
+    <span style="color: #b794f6">$meta</span> = <span style="color: #63b3ed">get_post_meta</span>( <span style="color: #b794f6">$post</span>-&gt;<span style="color: #fff">ID</span>, <span style="color: #9ae6b4">'custom_field'</span>, <span style="color: #f6ad55">true</span> );
+    <span style="color: #68d391">// This runs a query for EACH post!</span>
+}
+
+<span style="color: #68d391">// GOOD: Single Query</span>
+<span style="color: #b794f6">$post_ids</span> = <span style="color: #63b3ed">wp_list_pluck</span>( <span style="color: #b794f6">$posts</span>, <span style="color: #9ae6b4">'ID'</span> );
+<span style="color: #63b3ed">update_meta_cache</span>( <span style="color: #9ae6b4">'post'</span>, <span style="color: #b794f6">$post_ids</span> );
+<span style="color: #68d391">// Now get_post_meta uses cache!</span></code></pre>
+          <div
+            class="stats-grid"
+            style="
+              grid-template-columns: repeat(2, 1fr);
+              max-width: 600px;
+              margin: 1.5rem auto;
+            "
+          >
+            <div class="stat-card">
+              <div class="stat-number">150</div>
+              <div class="stat-label">Queries (Before)</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">3</div>
+              <div class="stat-label">Queries (After)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 7: Query Analysis -->
+      <div class="slide">
+        <span class="slide-number">7 / 20</span>
+        <div class="content">
+          <h2>Reading Query Monitor Data</h2>
+          <p
+            style="
+              text-align: center;
+              font-size: 1.3rem;
+              color: #666;
+              margin: -1rem 0 2rem 0;
+            "
+          >
+            Master the art of interpreting performance metrics to identify and
+            fix bottlenecks instantly
+          </p>
+          <div class="two-column" style="gap: 2rem">
+            <div
+              style="
+                background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+                padding: 2rem;
+                border-radius: 1rem;
+                border-left: 4px solid #dc2626;
+              "
+            >
+              <h3
+                style="
+                  color: #dc2626;
+                  margin-bottom: 1.5rem;
+                  display: flex;
+                  align-items: center;
+                  gap: 0.5rem;
+                "
+              >
+                <i
+                  class="fas fa-exclamation-triangle"
+                  style="font-size: 1.5rem"
+                ></i>
+                Red Flags to Watch For
+              </h3>
+              <ul style="list-style: none; padding: 0; margin: 0">
+                <li
+                  style="
+                    margin-bottom: 0.8rem;
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 0.8rem;
+                  "
+                >
+                  <i
+                    class="fas fa-clock"
+                    style="
+                      color: #dc2626;
+                      margin-top: 0.2rem;
+                      font-size: 1.1rem;
+                      width: 1.5rem;
+                    "
+                  ></i>
+                  <span style="font-size: 1.1rem"
+                    ><strong>Queries > 0.05s</strong> (highlighted in
+                    orange)</span
+                  >
+                </li>
+                <li
+                  style="
+                    margin-bottom: 0.8rem;
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 0.8rem;
+                  "
+                >
+                  <i
+                    class="fas fa-copy"
+                    style="
+                      color: #dc2626;
+                      margin-top: 0.2rem;
+                      font-size: 1.1rem;
+                      width: 1.5rem;
+                    "
+                  ></i>
+                  <span style="font-size: 1.1rem"
+                    ><strong>Duplicate queries</strong> (same query multiple
+                    times)</span
+                  >
+                </li>
+                <li
+                  style="
+                    margin-bottom: 0.8rem;
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 0.8rem;
+                  "
+                >
+                  <i
+                    class="fas fa-search-minus"
+                    style="
+                      color: #dc2626;
+                      margin-top: 0.2rem;
+                      font-size: 1.1rem;
+                      width: 1.5rem;
+                    "
+                  ></i>
+                  <span style="font-size: 1.1rem"
+                    ><strong>Queries without proper indexes</strong></span
+                  >
+                </li>
+                <li style="display: flex; align-items: flex-start; gap: 0.8rem">
+                  <i
+                    class="fas fa-database"
+                    style="
+                      color: #dc2626;
+                      margin-top: 0.2rem;
+                      font-size: 1.1rem;
+                      width: 1.5rem;
+                    "
+                  ></i>
+                  <span style="font-size: 1.1rem"
+                    ><strong>SELECT * queries</strong> on large tables</span
+                  >
+                </li>
+              </ul>
+            </div>
+            <div
+              style="
+                background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+                padding: 2rem;
+                border-radius: 1rem;
+                border-left: 4px solid #16a34a;
+              "
+            >
+              <h3
+                style="
+                  color: #16a34a;
+                  margin-bottom: 1.5rem;
+                  display: flex;
+                  align-items: center;
+                  gap: 0.5rem;
+                "
+              >
+                <i class="fas fa-rocket" style="font-size: 1.5rem"></i>
+                Quick Wins
+              </h3>
+              <ul style="list-style: none; padding: 0; margin: 0">
+                <li
+                  style="
+                    margin-bottom: 0.8rem;
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 0.8rem;
+                  "
+                >
+                  <i
+                    class="fas fa-memory"
+                    style="
+                      color: #16a34a;
+                      margin-top: 0.2rem;
+                      font-size: 1.1rem;
+                      width: 1.5rem;
+                    "
+                  ></i>
+                  <span style="font-size: 1.1rem"
+                    ><strong>Enable persistent object caching</strong></span
+                  >
+                </li>
+                <li
+                  style="
+                    margin-bottom: 0.8rem;
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 0.8rem;
+                  "
+                >
+                  <i
+                    class="fas fa-history"
+                    style="
+                      color: #16a34a;
+                      margin-top: 0.2rem;
+                      font-size: 1.1rem;
+                      width: 1.5rem;
+                    "
+                  ></i>
+                  <span style="font-size: 1.1rem"
+                    ><strong>Use transients</strong> for expensive
+                    operations</span
+                  >
+                </li>
+                <li
+                  style="
+                    margin-bottom: 0.8rem;
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 0.8rem;
+                  "
+                >
+                  <i
+                    class="fas fa-layer-group"
+                    style="
+                      color: #16a34a;
+                      margin-top: 0.2rem;
+                      font-size: 1.1rem;
+                      width: 1.5rem;
+                    "
+                  ></i>
+                  <span style="font-size: 1.1rem"
+                    ><strong>Batch database operations</strong></span
+                  >
+                </li>
+                <li style="display: flex; align-items: flex-start; gap: 0.8rem">
+                  <i
+                    class="fas fa-list-ol"
+                    style="
+                      color: #16a34a;
+                      margin-top: 0.2rem;
+                      font-size: 1.1rem;
+                      width: 1.5rem;
+                    "
+                  ></i>
+                  <span style="font-size: 1.1rem"
+                    ><strong>Add database indexes</strong> where needed</span
+                  >
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 8: Memory Profiling -->
+      <div class="slide">
+        <span class="slide-number">8 / 20</span>
+        <div class="content">
+          <h2>Memory Management</h2>
+          <p
+            style="
+              text-align: center;
+              font-size: 1.3rem;
+              color: #666;
+              margin: -1rem 0 2rem 0;
+            "
+          >
+            Optimize memory usage to prevent PHP fatal errors and improve
+            performance
+          </p>
+          <div class="two-column">
+            <div>
+              <h3
+                style="color: #667eea; font-size: 1.4rem; margin-bottom: 1.2rem"
+              >
+                Common Memory Hogs
+              </h3>
+              <ul style="font-size: 1.2rem">
+                <li>Loading entire tables into memory</li>
+                <li>Not using pagination</li>
+                <li>Keeping large objects in memory</li>
+                <li>Recursive operations</li>
+              </ul>
+            </div>
+            <div>
+              <pre
+                class="code-block"
+                style="
+                  white-space: pre;
+                  line-height: 1.5;
+                  text-align: left;
+                  padding: 1rem;
+                  font-size: 0.9rem;
+                  margin: 1.5rem 0;
+                  background: #1a202c;
+                  color: #68d391;
+                  border-radius: 1rem;
+                  overflow-x: auto;
+                "
+              ><code><span style="color: #68d391">// Memory efficient approach</span>
+<span style="color: #b794f6">$query</span> = <span style="color: #f6ad55">new</span> <span style="color: #63b3ed">WP_Query</span>([
+    <span style="color: #9ae6b4">'posts_per_page'</span> =&gt; <span style="color: #f687b3">10</span>,
+    <span style="color: #9ae6b4">'no_found_rows'</span> =&gt; <span style="color: #f6ad55">true</span>,
+    <span style="color: #9ae6b4">'update_post_meta_cache'</span> =&gt; <span style="color: #f6ad55">false</span>,
+    <span style="color: #9ae6b4">'update_post_term_cache'</span> =&gt; <span style="color: #f6ad55">false</span>
+]);</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 9: Crisis Mode -->
+      <div class="slide">
+        <span class="slide-number">9 / 20</span>
+        <div class="content">
+          <h2>When You Can't Access Admin</h2>
+          <h3
+            style="
+              text-align: center;
+              color: #e53e3e;
+              font-size: 1.6rem;
+              margin-bottom: 2rem;
+            "
+          >
+            The site is down. You can't log in. What now?
+          </h3>
+          <div style="text-align: center; margin: 2rem 0">
+            <span
+              style="
+                display: inline-block;
+                background: #667eea;
+                color: white;
+                padding: 0.75rem 2rem;
+                border-radius: 50px;
+                font-size: 1rem;
+                font-weight: 600;
+                letter-spacing: 0.05em;
+                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+              "
+            >
+              EMERGENCY TOOLKIT
+            </span>
+          </div>
+          <div class="icon-grid">
+            <div class="icon-item">
+              <div class="icon"><i class="fas fa-file-alt"></i></div>
+              <h3>db.php Drop-in</h3>
+              <p>Log queries without plugins</p>
+            </div>
+            <div class="icon-item">
+              <div class="icon"><i class="fas fa-terminal"></i></div>
+              <h3>WP-CLI</h3>
+              <p>Command line debugging</p>
+            </div>
+            <div class="icon-item">
+              <div class="icon"><i class="fas fa-chart-bar"></i></div>
+              <h3>Error Logs</h3>
+              <p>Server-side logging</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 10: db.php Solution -->
+      <div class="slide">
+        <span class="slide-number">10 / 20</span>
+        <div class="content">
+          <h2>The db.php Magic</h2>
+          <p
+            style="
+              text-align: center;
+              font-size: 1.3rem;
+              color: #666;
+              margin: -1rem 0 2rem 0;
+            "
+          >
+            Bypass WordPress restrictions with a custom database layer to
+            capture every query and error
+          </p>
+          <pre
+            class="code-block"
+            style="
+              white-space: pre;
+              line-height: 1.5;
+              text-align: left;
+              padding: 1rem;
+              font-size: 0.9rem;
+              margin: 1.5rem 0;
+              background: #1a202c;
+              color: #68d391;
+              border-radius: 1rem;
+              overflow-x: auto;
+            "
+          ><code><span style="color: #68d391">// wp-content/db.php</span>
+<span style="color: #f6ad55">&lt;?php</span>
+<span style="color: #63b3ed">define</span>( <span style="color: #9ae6b4">'SAVEQUERIES'</span>, <span style="color: #f6ad55">true</span> );
+
+<span style="color: #63b3ed">add_action</span>( <span style="color: #9ae6b4">'shutdown'</span>, <span style="color: #f6ad55">function</span>() {
+    <span style="color: #f6ad55">global</span> <span style="color: #b794f6">$wpdb</span>;
+    <span style="color: #b794f6">$log</span> = <span style="color: #63b3ed">fopen</span>( WP_CONTENT_DIR . <span style="color: #9ae6b4">'/query-log.txt'</span>, <span style="color: #9ae6b4">'a'</span> );
+    
+    <span style="color: #f6ad55">foreach</span> ( <span style="color: #b794f6">$wpdb</span>-&gt;queries <span style="color: #f6ad55">as</span> <span style="color: #b794f6">$q</span> ) {
+        <span style="color: #63b3ed">fwrite</span>( <span style="color: #b794f6">$log</span>, <span style="color: #63b3ed">sprintf</span>( 
+            <span style="color: #9ae6b4">"[%s] %fs - %s\n"</span>,
+            <span style="color: #63b3ed">date</span>(<span style="color: #9ae6b4">'H:i:s'</span>), <span style="color: #b794f6">$q</span>[<span style="color: #f687b3">1</span>], <span style="color: #b794f6">$q</span>[<span style="color: #f687b3">0</span>]
+        ));
+    }
+    <span style="color: #63b3ed">fclose</span>( <span style="color: #b794f6">$log</span> );
+});
+
+<span style="color: #f6ad55">require_once</span> ABSPATH . WPINC . <span style="color: #9ae6b4">'/wp-db.php'</span>;</code></pre>
+          <p style="text-align: center; font-size: 1.3rem; margin-top: 2rem">
+            <span class="highlight"
+              >This works even when WordPress is broken!</span
+            >
+          </p>
+        </div>
+      </div>
+
+      <!-- Slide 11: WP-CLI Power -->
+      <div class="slide">
+        <span class="slide-number">11 / 20</span>
+        <div class="content">
+          <h2>WP-CLI Debugging Commands</h2>
+          <p
+            style="
+              text-align: center;
+              font-size: 1.3rem;
+              color: #666;
+              margin: -1rem 0 2rem 0;
+            "
+          >
+            Essential command-line tools for diagnosis and recovery when the
+            admin panel is down
+          </p>
+          <div style="text-align: center; margin: 1.5rem 0">
+            <span
+              class="demo-tag"
+              style="
+                display: inline-block;
+                background: linear-gradient(135deg, #873eff 0%, #720eec 100%);
+                color: white;
+                padding: 0.75rem 2rem;
+                border-radius: 2rem;
+                font-weight: bold;
+                font-size: 1rem;
+                box-shadow: 0 8px 20px rgba(114, 14, 236, 0.3);
+                transition: all 0.3s ease;
+                cursor: pointer;
+              "
+              onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 25px rgba(114, 14, 236, 0.4)'"
+              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 20px rgba(114, 14, 236, 0.3)'"
+            >
+              <i class="fas fa-terminal" style="margin-right: 0.5rem"></i>
+              COMMAND LINE MAGIC
+            </span>
+          </div>
+          <pre
+            class="code-block"
+            style="
+              white-space: pre;
+              line-height: 1.5;
+              text-align: left;
+              padding: 1rem;
+              font-size: 0.9rem;
+              margin: 1.5rem 0;
+              background: #1a202c;
+              color: #68d391;
+              border-radius: 1rem;
+              overflow-x: auto;
+            "
+          ><code><span style="color: #68d391"># Profile a specific URL</span>
+<span style="color: #f6ad55">$</span> wp profile stage --url=https://site.com/slow-page/
+
+<span style="color: #68d391"># Check database performance</span>
+<span style="color: #f6ad55">$</span> wp db query <span style="color: #9ae6b4">"SHOW FULL PROCESSLIST"</span>
+
+<span style="color: #68d391"># Find slow queries</span>
+<span style="color: #f6ad55">$</span> wp db query <span style="color: #9ae6b4">"SELECT * FROM information_schema.processlist WHERE time &gt; 10"</span>
+
+<span style="color: #68d391"># Check active plugins</span>
+<span style="color: #f6ad55">$</span> wp plugin list --status=active
+
+<span style="color: #68d391"># Disable all plugins (emergency)</span>
+<span style="color: #f6ad55">$</span> wp plugin deactivate --all
+
+<span style="color: #68d391"># Enable Query Monitor via CLI</span>
+<span style="color: #f6ad55">$</span> wp plugin activate query-monitor</code></pre>
+        </div>
+      </div>
+
+      <!-- Slide 12: WooCommerce Challenges -->
+      <div class="slide">
+        <span class="slide-number">12 / 20</span>
+        <div class="content">
+          <h2>WooCommerce Performance Challenges</h2>
+          <p
+            style="
+              text-align: center;
+              font-size: 1.3rem;
+              color: #666;
+              margin: -1rem 0 2rem 0;
+            "
+          >
+            Understanding the unique performance bottlenecks that come with
+            running an online store
+          </p>
+          <div
+            class="stats-grid"
+            style="
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+              gap: 2rem;
+              margin: 2rem 0;
+            "
+          >
+            <div
+              style="
+                background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+                padding: 2rem;
+                border-radius: 1rem;
+                text-align: center;
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+                transition: all 0.3s ease;
+                cursor: pointer;
+              "
+              onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 12px 25px rgba(0, 0, 0, 0.15)'"
+              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 20px rgba(0, 0, 0, 0.08)'"
+            >
+              <i
+                class="fas fa-database"
+                style="font-size: 2.5rem; color: #dc2626; margin-bottom: 1rem"
+              ></i>
+              <div
+                style="
+                  font-size: 3rem;
+                  font-weight: bold;
+                  color: #dc2626;
+                  margin-bottom: 0.5rem;
+                "
+              >
+                3x
+              </div>
+              <div style="font-size: 1.1rem; color: #7f1d1d">
+                More queries than WordPress
+              </div>
+            </div>
+            <div
+              style="
+                background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+                padding: 2rem;
+                border-radius: 1rem;
+                text-align: center;
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+                transition: all 0.3s ease;
+                cursor: pointer;
+              "
+              onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 12px 25px rgba(0, 0, 0, 0.15)'"
+              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 20px rgba(0, 0, 0, 0.08)'"
+            >
+              <i
+                class="fas fa-shopping-cart"
+                style="font-size: 2.5rem; color: #f59e0b; margin-bottom: 1rem"
+              ></i>
+              <div
+                style="
+                  font-size: 3rem;
+                  font-weight: bold;
+                  color: #f59e0b;
+                  margin-bottom: 0.5rem;
+                "
+              >
+                100+
+              </div>
+              <div style="font-size: 1.1rem; color: #78350f">
+                Queries on checkout
+              </div>
+            </div>
+            <div
+              style="
+                background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%);
+                padding: 2rem;
+                border-radius: 1rem;
+                text-align: center;
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+                transition: all 0.3s ease;
+                cursor: pointer;
+              "
+              onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 12px 25px rgba(0, 0, 0, 0.15)'"
+              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 20px rgba(0, 0, 0, 0.08)'"
+            >
+              <i
+                class="fas fa-memory"
+                style="font-size: 2.5rem; color: #873eff; margin-bottom: 1rem"
+              ></i>
+              <div
+                style="
+                  font-size: 3rem;
+                  font-weight: bold;
+                  color: #873eff;
+                  margin-bottom: 0.5rem;
+                "
+              >
+                50MB+
+              </div>
+              <div style="font-size: 1.1rem; color: #581c87">
+                Memory on product pages
+              </div>
+            </div>
+          </div>
+          <div
+            style="
+              background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);
+              padding: 2rem;
+              border-radius: 1rem;
+              border-left: 4px solid #ea580c;
+              margin-top: 2rem;
+            "
+          >
+            <h3
+              style="
+                color: #ea580c;
+                margin-bottom: 1rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+              "
+            >
+              <i
+                class="fas fa-exclamation-circle"
+                style="font-size: 1.5rem"
+              ></i>
+              Common Performance Bottlenecks
+            </h3>
+            <div
+              style="
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 1rem;
+              "
+            >
+              <div style="display: flex; align-items: center; gap: 0.5rem">
+                <i class="fas fa-calculator" style="color: #ea580c"></i>
+                <span style="font-size: 1.1rem">Cart calculations</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.5rem">
+                <i class="fas fa-percentage" style="color: #ea580c"></i>
+                <span style="font-size: 1.1rem">Tax queries</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.5rem">
+                <i class="fas fa-truck" style="color: #ea580c"></i>
+                <span style="font-size: 1.1rem">Shipping calculations</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.5rem">
+                <i class="fas fa-sitemap" style="color: #ea580c"></i>
+                <span style="font-size: 1.1rem">Product variations</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.5rem">
+                <i class="fas fa-cogs" style="color: #ea580c"></i>
+                <span style="font-size: 1.1rem">Order processing</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 13: HPOS -->
+      <div class="slide">
+        <span class="slide-number">13 / 20</span>
+        <div class="content">
+          <h2>HPOS: The Game Changer</h2>
+          <h3 style="text-align: center">High-Performance Order Storage</h3>
+          <div class="two-column">
+            <div>
+              <h3>Old Way (wp_posts)</h3>
+              <pre
+                class="code-block"
+                style="
+                  white-space: pre;
+                  line-height: 1.5;
+                  text-align: left;
+                  padding: 1rem;
+                  font-size: 0.9rem;
+                  margin: 1.5rem 0;
+                  background: #fee;
+                  color: #333;
+                  border-radius: 1rem;
+                  overflow-x: auto;
+                "
+              ><code><span style="color: #b794f6">$order_total</span> = <span style="color: #e53e3e">get_post_meta</span>( <span style="color: #b794f6">$order_id</span>, <span style="color: #e53e3e">'_order_total'</span>, <span style="color: #e53e3e">true</span> );</code></pre>
+              <p style="color: #e53e3e">❌ Not scalable</p>
+              <p style="color: #e53e3e">❌ Slow queries</p>
+            </div>
+            <div>
+              <h3>New Way (HPOS)</h3>
+              <pre
+                class="code-block"
+                style="
+                  white-space: pre;
+                  line-height: 1.5;
+                  text-align: left;
+                  padding: 1rem;
+                  font-size: 0.9rem;
+                  margin: 1.5rem 0;
+                  background: #efe;
+                  color: #333;
+                  border-radius: 1rem;
+                  overflow-x: auto;
+                "
+              ><code><span style="color: #b794f6">$order</span> = <span style="color: #38a169">wc_get_order</span>( <span style="color: #b794f6">$order_id</span> );
+<span style="color: #b794f6">$order_total</span> = <span style="color: #b794f6">$order</span>-&gt;<span style="color: #38a169">get_total</span>();</code></pre>
+              <p style="color: #38a169">✅ Dedicated tables</p>
+              <p style="color: #38a169">✅ Optimized queries</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 14: Caching Strategies -->
+      <div class="slide">
+        <span class="slide-number">14 / 20</span>
+        <div class="content">
+          <h2>Smart Caching Strategies</h2>
+          <p
+            style="
+              text-align: center;
+              font-size: 1.3rem;
+              color: #666;
+              margin: -1rem 0 2rem 0;
+            "
+          >
+            Implement multi-layered caching to dramatically reduce database
+            queries and server load
+          </p>
+          <pre
+            class="code-block"
+            style="
+              white-space: pre;
+              line-height: 1.5;
+              text-align: left;
+              padding: 1rem;
+              font-size: 0.9rem;
+              margin: 1.5rem 0;
+              background: #1a202c;
+              color: #68d391;
+              border-radius: 1rem;
+              overflow-x: auto;
+            "
+          ><code><span style="color: #68d391">// Level 1: Object Cache (per request)</span>
+<span style="color: #b794f6">$data</span> = <span style="color: #63b3ed">wp_cache_get</span>( <span style="color: #9ae6b4">'my_data'</span> );
+<span style="color: #f6ad55">if</span> ( <span style="color: #f6ad55">false</span> === <span style="color: #b794f6">$data</span> ) {
+    <span style="color: #b794f6">$data</span> = <span style="color: #63b3ed">expensive_operation</span>();
+    <span style="color: #63b3ed">wp_cache_set</span>( <span style="color: #9ae6b4">'my_data'</span>, <span style="color: #b794f6">$data</span> );
+}
+
+<span style="color: #68d391">// Level 2: Transients (persistent)</span>
+<span style="color: #b794f6">$data</span> = <span style="color: #63b3ed">get_transient</span>( <span style="color: #9ae6b4">'my_data'</span> );
+<span style="color: #f6ad55">if</span> ( <span style="color: #f6ad55">false</span> === <span style="color: #b794f6">$data</span> ) {
+    <span style="color: #b794f6">$data</span> = <span style="color: #63b3ed">expensive_operation</span>();
+    <span style="color: #63b3ed">set_transient</span>( <span style="color: #9ae6b4">'my_data'</span>, <span style="color: #b794f6">$data</span>, HOUR_IN_SECONDS );
+}
+
+<span style="color: #68d391">// Level 3: Static caching (same request)</span>
+<span style="color: #f6ad55">static</span> <span style="color: #b794f6">$data</span> = <span style="color: #f6ad55">null</span>;
+<span style="color: #f6ad55">if</span> ( <span style="color: #f6ad55">null</span> === <span style="color: #b794f6">$data</span> ) {
+    <span style="color: #b794f6">$data</span> = <span style="color: #63b3ed">expensive_operation</span>();
+}</code></pre>
+          <p style="text-align: center; font-size: 1.3rem; margin-top: 2rem">
+            <span class="highlight"
+              >Use the right cache for the right job!</span
+            >
+          </p>
+        </div>
+      </div>
+
+      <!-- Slide 15: Asset Optimization -->
+      <div class="slide">
+        <span class="slide-number">15 / 20</span>
+        <div class="content">
+          <h2>Asset Loading Best Practices</h2>
+          <p
+            style="
+              text-align: center;
+              font-size: 1.3rem;
+              color: #666;
+              margin: -1rem 0 2rem 0;
+            "
+          >
+            Load JavaScript and CSS the WordPress way to prevent conflicts and
+            improve performance
+          </p>
+          <div style="text-align: center; margin: 1.5rem 0">
+            <span
+              class="demo-tag"
+              style="
+                display: inline-block;
+                background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+                color: white;
+                padding: 0.75rem 2rem;
+                border-radius: 2rem;
+                font-weight: bold;
+                font-size: 1rem;
+                box-shadow: 0 8px 20px rgba(220, 38, 38, 0.3);
+                transition: all 0.3s ease;
+                cursor: pointer;
+              "
+              onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 25px rgba(220, 38, 38, 0.4)'"
+              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 20px rgba(220, 38, 38, 0.3)'"
+            >
+              <i
+                class="fas fa-exclamation-triangle"
+                style="margin-right: 0.5rem"
+              ></i>
+              CRITICAL FOR PERFORMANCE
+            </span>
+          </div>
+          <div class="two-column">
+            <div>
+              <h3>❌ Wrong Way</h3>
+              <pre
+                class="code-block"
+                style="
+                  white-space: pre;
+                  line-height: 1.5;
+                  text-align: left;
+                  padding: 1rem;
+                  font-size: 0.9rem;
+                  margin: 1.5rem 0;
+                  background: #fee;
+                  color: #333;
+                  border-radius: 1rem;
+                  overflow-x: auto;
+                "
+              ><code><span style="color: #f6ad55">echo</span> <span style="color: #e53e3e">'&lt;script&gt;var data = '</span> . <span style="color: #b794f6">$value</span> . <span style="color: #e53e3e">';&lt;/script&gt;'</span>;
+<span style="color: #f6ad55">echo</span> <span style="color: #e53e3e">'&lt;link rel="stylesheet" href="style.css"&gt;'</span>;</code></pre>
+            </div>
+            <div>
+              <h3>✅ Right Way</h3>
+              <pre
+                class="code-block"
+                style="
+                  white-space: pre;
+                  line-height: 1.5;
+                  text-align: left;
+                  padding: 1rem;
+                  font-size: 0.9rem;
+                  margin: 1.5rem 0;
+                  background: #efe;
+                  color: #333;
+                  border-radius: 1rem;
+                  overflow-x: auto;
+                "
+              ><code><span style="color: #38a169">wp_enqueue_script</span>( <span style="color: #38a169">'my-script'</span> );
+<span style="color: #38a169">wp_localize_script</span>( <span style="color: #38a169">'my-script'</span>, <span style="color: #38a169">'myData'</span>, <span style="color: #b794f6">$value</span> );
+<span style="color: #38a169">wp_enqueue_style</span>( <span style="color: #38a169">'my-style'</span> );</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 16: Quick Wins -->
+      <div class="slide">
+        <span class="slide-number">16 / 20</span>
+        <div class="content">
+          <h2>Your Performance Checklist</h2>
+          <p
+            style="
+              text-align: center;
+              font-size: 1.3rem;
+              color: #666;
+              margin: -1rem 0 2rem 0;
+            "
+          >
+            Eight proven optimizations you can implement today for immediate
+            performance gains
+          </p>
+          <div
+            style="
+              background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+              padding: 2.5rem;
+              border-radius: 1rem;
+              border-left: 4px solid #16a34a;
+              box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            "
+          >
+            <h3
+              style="
+                color: #16a34a;
+                margin-bottom: 2rem;
+                text-align: center;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+              "
+            >
+              <i class="fas fa-rocket" style="font-size: 1.8rem"></i>
+              <span style="font-size: 1.6rem"
+                >Implement Today for Instant Results</span
+              >
+            </h3>
+            <div
+              style="
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+              "
+            >
+              <div
+                style="
+                  display: flex;
+                  align-items: flex-start;
+                  gap: 1rem;
+                  background: white;
+                  padding: 1rem;
+                  border-radius: 0.5rem;
+                  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+                "
+              >
+                <i
+                  class="fas fa-check-circle"
+                  style="color: #16a34a; font-size: 1.4rem; margin-top: 0.2rem"
+                ></i>
+                <div>
+                  <strong style="font-size: 1.2rem; color: #333"
+                    >Enable Redis/Memcached</strong
+                  >
+                  <p
+                    style="
+                      margin: 0.3rem 0 0 0;
+                      color: #666;
+                      font-size: 0.95rem;
+                    "
+                  >
+                    Persistent object caching for faster data retrieval
+                  </p>
+                </div>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  align-items: flex-start;
+                  gap: 1rem;
+                  background: white;
+                  padding: 1rem;
+                  border-radius: 0.5rem;
+                  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+                "
+              >
+                <i
+                  class="fas fa-check-circle"
+                  style="color: #16a34a; font-size: 1.4rem; margin-top: 0.2rem"
+                ></i>
+                <div>
+                  <strong style="font-size: 1.2rem; color: #333"
+                    >Use
+                    <code
+                      style="
+                        background: #f3f4f6;
+                        padding: 0.2rem 0.4rem;
+                        border-radius: 0.25rem;
+                      "
+                      >posts_per_page</code
+                    >
+                    limits</strong
+                  >
+                  <p
+                    style="
+                      margin: 0.3rem 0 0 0;
+                      color: #666;
+                      font-size: 0.95rem;
+                    "
+                  >
+                    Prevent loading unnecessary data in queries
+                  </p>
+                </div>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  align-items: flex-start;
+                  gap: 1rem;
+                  background: white;
+                  padding: 1rem;
+                  border-radius: 0.5rem;
+                  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+                "
+              >
+                <i
+                  class="fas fa-check-circle"
+                  style="color: #16a34a; font-size: 1.4rem; margin-top: 0.2rem"
+                ></i>
+                <div>
+                  <strong style="font-size: 1.2rem; color: #333"
+                    >Cache with transients</strong
+                  >
+                  <p
+                    style="
+                      margin: 0.3rem 0 0 0;
+                      color: #666;
+                      font-size: 0.95rem;
+                    "
+                  >
+                    Store expensive calculations for reuse
+                  </p>
+                </div>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  align-items: flex-start;
+                  gap: 1rem;
+                  background: white;
+                  padding: 1rem;
+                  border-radius: 0.5rem;
+                  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+                "
+              >
+                <i
+                  class="fas fa-check-circle"
+                  style="color: #16a34a; font-size: 1.4rem; margin-top: 0.2rem"
+                ></i>
+                <div>
+                  <strong style="font-size: 1.2rem; color: #333"
+                    >Defer non-critical scripts</strong
+                  >
+                  <p
+                    style="
+                      margin: 0.3rem 0 0 0;
+                      color: #666;
+                      font-size: 0.95rem;
+                    "
+                  >
+                    Load JavaScript after page content
+                  </p>
+                </div>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  align-items: flex-start;
+                  gap: 1rem;
+                  background: white;
+                  padding: 1rem;
+                  border-radius: 0.5rem;
+                  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+                "
+              >
+                <i
+                  class="fas fa-check-circle"
+                  style="color: #16a34a; font-size: 1.4rem; margin-top: 0.2rem"
+                ></i>
+                <div>
+                  <strong style="font-size: 1.2rem; color: #333"
+                    >Optimize images (WebP)</strong
+                  >
+                  <p
+                    style="
+                      margin: 0.3rem 0 0 0;
+                      color: #666;
+                      font-size: 0.95rem;
+                    "
+                  >
+                    Modern format with 30% smaller file sizes
+                  </p>
+                </div>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  align-items: flex-start;
+                  gap: 1rem;
+                  background: white;
+                  padding: 1rem;
+                  border-radius: 0.5rem;
+                  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+                "
+              >
+                <i
+                  class="fas fa-check-circle"
+                  style="color: #16a34a; font-size: 1.4rem; margin-top: 0.2rem"
+                ></i>
+                <div>
+                  <strong style="font-size: 1.2rem; color: #333"
+                    ><code
+                      style="
+                        background: #f3f4f6;
+                        padding: 0.2rem 0.4rem;
+                        border-radius: 0.25rem;
+                      "
+                      >no_found_rows => true</code
+                    ></strong
+                  >
+                  <p
+                    style="
+                      margin: 0.3rem 0 0 0;
+                      color: #666;
+                      font-size: 0.95rem;
+                    "
+                  >
+                    Skip counting total rows when not needed
+                  </p>
+                </div>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  align-items: flex-start;
+                  gap: 1rem;
+                  background: white;
+                  padding: 1rem;
+                  border-radius: 0.5rem;
+                  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+                "
+              >
+                <i
+                  class="fas fa-check-circle"
+                  style="color: #16a34a; font-size: 1.4rem; margin-top: 0.2rem"
+                ></i>
+                <div>
+                  <strong style="font-size: 1.2rem; color: #333"
+                    >Implement lazy loading</strong
+                  >
+                  <p
+                    style="
+                      margin: 0.3rem 0 0 0;
+                      color: #666;
+                      font-size: 0.95rem;
+                    "
+                  >
+                    Load images only when visible
+                  </p>
+                </div>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  align-items: flex-start;
+                  gap: 1rem;
+                  background: white;
+                  padding: 1rem;
+                  border-radius: 0.5rem;
+                  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+                "
+              >
+                <i
+                  class="fas fa-check-circle"
+                  style="color: #16a34a; font-size: 1.4rem; margin-top: 0.2rem"
+                ></i>
+                <div>
+                  <strong style="font-size: 1.2rem; color: #333"
+                    >Remove unused plugins</strong
+                  >
+                  <p
+                    style="
+                      margin: 0.3rem 0 0 0;
+                      color: #666;
+                      font-size: 0.95rem;
+                    "
+                  >
+                    Each plugin adds overhead and potential conflicts
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 17: Tools & Resources -->
+      <div class="slide">
+        <span class="slide-number">17 / 20</span>
+        <div class="content">
+          <h2>Your Debugging Toolkit</h2>
+          <p
+            style="
+              text-align: center;
+              font-size: 1.3rem;
+              color: #666;
+              margin: -1rem 0 2rem 0;
+            "
+          >
+            Essential tools and resources for WordPress performance optimization
+            and debugging
+          </p>
+          <div class="icon-grid">
+            <div class="icon-item">
+              <div class="icon"><i class="fas fa-search"></i></div>
+              <h3>Query Monitor</h3>
+              <p>querymonitor.com</p>
+            </div>
+            <div class="icon-item">
+              <div class="icon"><i class="fas fa-bolt"></i></div>
+              <h3>Debug Bar</h3>
+              <p>Alternative to QM</p>
+            </div>
+            <div class="icon-item">
+              <div class="icon"><i class="fas fa-chart-line"></i></div>
+              <h3>New Relic</h3>
+              <p>APM for production</p>
+            </div>
+            <div class="icon-item">
+              <div class="icon"><i class="fas fa-rocket"></i></div>
+              <h3>GTmetrix</h3>
+              <p>Frontend performance</p>
+            </div>
+            <div class="icon-item">
+              <div class="icon"><i class="fas fa-terminal"></i></div>
+              <h3>WP-CLI</h3>
+              <p>Command line power</p>
+            </div>
+            <div class="icon-item">
+              <div class="icon"><i class="fas fa-wrench"></i></div>
+              <h3>Xdebug</h3>
+              <p>PHP profiling</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 18: Common Q&A -->
+      <div class="slide">
+        <span class="slide-number">18 / 20</span>
+        <div class="content">
+          <h2>Frequently Asked Questions</h2>
+          <div style="font-size: 1.3rem; line-height: 2">
+            <div style="margin: 2rem 0">
+              <strong>Q: Does Query Monitor slow down my site?</strong><br />
+              A: Minimal impact (~10-50ms), only for logged-in admins
+            </div>
+            <div style="margin: 2rem 0">
+              <strong>Q: Can I use it in production?</strong><br />
+              A: Yes, but restrict to specific IPs or user roles
+            </div>
+            <div style="margin: 2rem 0">
+              <strong>Q: What about JavaScript performance?</strong><br />
+              A: Use Chrome DevTools; QM focuses on server-side
+            </div>
+            <div style="margin: 2rem 0">
+              <strong>Q: How do I debug AJAX requests?</strong><br />
+              A: Check QM headers in Network tab or use QM's AJAX panel
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 19: Key Takeaways -->
+      <div class="slide">
+        <span class="slide-number">19 / 20</span>
+        <div class="content">
+          <h2>Remember This</h2>
+          <p
+            style="
+              text-align: center;
+              font-size: 1.3rem;
+              color: #666;
+              margin: -1rem 0 2rem 0;
+            "
+          >
+            Five golden rules that will transform your WordPress performance
+            debugging
+          </p>
+          <div style="display: grid; gap: 1.5rem; margin-top: 2rem">
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 2rem;
+                background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+                padding: 1.5rem 2rem;
+                border-radius: 1rem;
+                border-left: 4px solid #3b82f6;
+                transition: all 0.3s ease;
+              "
+              onmouseover="this.style.transform='translateX(10px)'; this.style.boxShadow='0 8px 20px rgba(59, 130, 246, 0.2)'"
+              onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='none'"
+            >
+              <i
+                class="fas fa-crosshairs"
+                style="font-size: 2rem; color: #3b82f6; width: 3rem"
+              ></i>
+              <div>
+                <span
+                  style="font-size: 1.5rem; font-weight: bold; color: #1e293b"
+                  >Measure, don't guess</span
+                >
+                <p style="margin: 0.3rem 0 0 0; color: #64748b">
+                  Use data to drive every optimization decision
+                </p>
+              </div>
+            </div>
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 2rem;
+                background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+                padding: 1.5rem 2rem;
+                border-radius: 1rem;
+                border-left: 4px solid #f59e0b;
+                transition: all 0.3s ease;
+              "
+              onmouseover="this.style.transform='translateX(10px)'; this.style.boxShadow='0 8px 20px rgba(245, 158, 11, 0.2)'"
+              onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='none'"
+            >
+              <i
+                class="fas fa-microscope"
+                style="font-size: 2rem; color: #f59e0b; width: 3rem"
+              ></i>
+              <div>
+                <span
+                  style="font-size: 1.5rem; font-weight: bold; color: #1e293b"
+                  >Profile before optimizing</span
+                >
+                <p style="margin: 0.3rem 0 0 0; color: #64748b">
+                  Find the real bottlenecks, not the assumed ones
+                </p>
+              </div>
+            </div>
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 2rem;
+                background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%);
+                padding: 1.5rem 2rem;
+                border-radius: 1rem;
+                border-left: 4px solid #873eff;
+                transition: all 0.3s ease;
+              "
+              onmouseover="this.style.transform='translateX(10px)'; this.style.boxShadow='0 8px 20px rgba(135, 62, 255, 0.2)'"
+              onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='none'"
+            >
+              <i
+                class="fas fa-bolt"
+                style="font-size: 2rem; color: #873eff; width: 3rem"
+              ></i>
+              <div>
+                <span
+                  style="font-size: 1.5rem; font-weight: bold; color: #1e293b"
+                  >Cache strategically</span
+                >
+                <p style="margin: 0.3rem 0 0 0; color: #64748b">
+                  Layer your caching for maximum efficiency
+                </p>
+              </div>
+            </div>
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 2rem;
+                background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+                padding: 1.5rem 2rem;
+                border-radius: 1rem;
+                border-left: 4px solid #16a34a;
+                transition: all 0.3s ease;
+              "
+              onmouseover="this.style.transform='translateX(10px)'; this.style.boxShadow='0 8px 20px rgba(22, 163, 74, 0.2)'"
+              onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='none'"
+            >
+              <i
+                class="fas fa-chart-line"
+                style="font-size: 2rem; color: #16a34a; width: 3rem"
+              ></i>
+              <div>
+                <span
+                  style="font-size: 1.5rem; font-weight: bold; color: #1e293b"
+                  >Monitor continuously</span
+                >
+                <p style="margin: 0.3rem 0 0 0; color: #64748b">
+                  Performance isn't a one-time fix, it's ongoing
+                </p>
+              </div>
+            </div>
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 2rem;
+                background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+                padding: 1.5rem 2rem;
+                border-radius: 1rem;
+                border-left: 4px solid #dc2626;
+                transition: all 0.3s ease;
+              "
+              onmouseover="this.style.transform='translateX(10px)'; this.style.boxShadow='0 8px 20px rgba(220, 38, 38, 0.2)'"
+              onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='none'"
+            >
+              <i
+                class="fas fa-sync-alt"
+                style="font-size: 2rem; color: #dc2626; width: 3rem"
+              ></i>
+              <div>
+                <span
+                  style="font-size: 1.5rem; font-weight: bold; color: #1e293b"
+                  >Iterate and improve</span
+                >
+                <p style="margin: 0.3rem 0 0 0; color: #64748b">
+                  Small, continuous improvements beat big rewrites
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 20: Thank You -->
+      <div class="slide">
+        <span class="slide-number">20 / 20</span>
+        <div
+          class="content"
+          style="
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            position: relative;
+          "
+        >
+          <style>
+            @keyframes gradientShift {
+              0% {
+                background-position: 0% 50%;
+              }
+              50% {
+                background-position: 100% 50%;
+              }
+              100% {
+                background-position: 0% 50%;
+              }
+            }
+            @keyframes fadeInScale {
+              from {
+                opacity: 0;
+                transform: scale(0.8);
+              }
+              to {
+                opacity: 1;
+                transform: scale(1);
+              }
+            }
+            @keyframes slideInFromLeft {
+              from {
+                opacity: 0;
+                transform: translateX(-50px);
+              }
+              to {
+                opacity: 1;
+                transform: translateX(0);
+              }
+            }
+            @keyframes slideInFromRight {
+              from {
+                opacity: 0;
+                transform: translateX(50px);
+              }
+              to {
+                opacity: 1;
+                transform: translateX(0);
+              }
+            }
+            @keyframes slideInFromBottom {
+              from {
+                opacity: 0;
+                transform: translateY(50px);
+              }
+              to {
+                opacity: 1;
+                transform: translateY(0);
+              }
+            }
+            @keyframes glow {
+              0%,
+              100% {
+                box-shadow: 0 0 20px rgba(135, 62, 255, 0.5);
+              }
+              50% {
+                box-shadow: 0 0 40px rgba(135, 62, 255, 0.8),
+                  0 0 60px rgba(135, 62, 255, 0.4);
+              }
+            }
+            @keyframes float {
+              0%,
+              100% {
+                transform: translateY(0) rotate(0deg);
+              }
+              25% {
+                transform: translateY(-10px) rotate(2deg);
+              }
+              75% {
+                transform: translateY(10px) rotate(-2deg);
+              }
+            }
+            .gradient-bg {
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              background: linear-gradient(
+                45deg,
+                #873eff15,
+                #720eec15,
+                #5007aa15,
+                #873eff15
+              );
+              background-size: 400% 400%;
+              animation: gradientShift 10s ease infinite;
+              pointer-events: none;
+              z-index: -1;
+            }
+            .confetti {
+              position: absolute;
+              width: 10px;
+              height: 10px;
+              background: #873eff;
+              opacity: 0.6;
+              animation: float 4s ease-in-out infinite;
+            }
+            .confetti:nth-child(1) {
+              top: 10%;
+              left: 20%;
+              animation-delay: 0s;
+              background: #720eec;
+            }
+            .confetti:nth-child(2) {
+              top: 20%;
+              right: 20%;
+              animation-delay: 1s;
+              background: #f59e0b;
+            }
+            .confetti:nth-child(3) {
+              bottom: 30%;
+              left: 15%;
+              animation-delay: 2s;
+              background: #16a34a;
+            }
+            .confetti:nth-child(4) {
+              bottom: 20%;
+              right: 25%;
+              animation-delay: 3s;
+              background: #dc2626;
+            }
+          </style>
+
+          <div class="gradient-bg"></div>
+          <div class="confetti"></div>
+          <div class="confetti"></div>
+          <div class="confetti"></div>
+          <div class="confetti"></div>
+
+          <!-- Main Title -->
+          <div style="animation: fadeInScale 1s ease-out; margin-bottom: 2rem">
+            <h1
+              style="
+                font-size: 5rem;
+                font-weight: 900;
+                margin: 0;
+                background: linear-gradient(
+                  90deg,
+                  #873eff,
+                  #720eec,
+                  #5007aa,
+                  #873eff
+                );
+                background-size: 200% auto;
+                -webkit-background-clip: text;
+                background-clip: text;
+                color: transparent;
+                animation: gradientShift 3s linear infinite;
+                text-align: center;
+                letter-spacing: -2px;
+              "
+            >
+              Thank You, Team!
+            </h1>
+            <p
+              style="
+                text-align: center;
+                font-size: 1.3rem;
+                color: #64748b;
+                margin-top: 1rem;
+                font-weight: 300;
+              "
+            >
+              From debugging mysteries to performance mastery — you're now
+              equipped to excel!
+            </p>
+          </div>
+
+          <!-- Three Cards Section -->
+          <div
+            style="
+              display: flex;
+              gap: 3rem;
+              margin: 3rem 0;
+              align-items: stretch;
+            "
+          >
+            <!-- Share Card -->
+            <div
+              style="
+                background: white;
+                padding: 2rem;
+                border-radius: 1.5rem;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+                border-top: 4px solid #873eff;
+                min-width: 200px;
+                text-align: center;
+                animation: slideInFromLeft 0.8s ease-out 0.3s backwards;
+                transition: all 0.3s ease;
+              "
+              onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 15px 40px rgba(135, 62, 255, 0.15)'"
+              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 30px rgba(0, 0, 0, 0.08)'"
+            >
+              <div
+                style="
+                  width: 60px;
+                  height: 60px;
+                  background: linear-gradient(135deg, #873eff, #720eec);
+                  border-radius: 1rem;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  margin: 0 auto 1rem;
+                "
+              >
+                <i
+                  class="fas fa-share-alt"
+                  style="color: white; font-size: 1.5rem"
+                ></i>
+              </div>
+              <h3 style="color: #1e293b; margin: 0.5rem 0; font-size: 1.3rem">
+                Share
+              </h3>
+              <p style="color: #64748b; font-size: 0.9rem; margin: 0">
+                Your insights with the team
+              </p>
+            </div>
+
+            <!-- Collaborate Card -->
+            <div
+              style="
+                background: white;
+                padding: 2rem;
+                border-radius: 1.5rem;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+                border-top: 4px solid #16a34a;
+                min-width: 200px;
+                text-align: center;
+                animation: slideInFromBottom 0.8s ease-out 0.5s backwards;
+                transition: all 0.3s ease;
+              "
+              onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 15px 40px rgba(22, 163, 74, 0.15)'"
+              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 30px rgba(0, 0, 0, 0.08)'"
+            >
+              <div
+                style="
+                  width: 60px;
+                  height: 60px;
+                  background: linear-gradient(135deg, #16a34a, #15803d);
+                  border-radius: 1rem;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  margin: 0 auto 1rem;
+                "
+              >
+                <i
+                  class="fas fa-handshake"
+                  style="color: white; font-size: 1.5rem"
+                ></i>
+              </div>
+              <h3 style="color: #1e293b; margin: 0.5rem 0; font-size: 1.3rem">
+                Collaborate
+              </h3>
+              <p style="color: #64748b; font-size: 0.9rem; margin: 0">
+                On debugging challenges
+              </p>
+            </div>
+
+            <!-- Grow Card -->
+            <div
+              style="
+                background: white;
+                padding: 2rem;
+                border-radius: 1.5rem;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+                border-top: 4px solid #f59e0b;
+                min-width: 200px;
+                text-align: center;
+                animation: slideInFromRight 0.8s ease-out 0.7s backwards;
+                transition: all 0.3s ease;
+              "
+              onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 15px 40px rgba(245, 158, 11, 0.15)'"
+              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 30px rgba(0, 0, 0, 0.08)'"
+            >
+              <div
+                style="
+                  width: 60px;
+                  height: 60px;
+                  background: linear-gradient(135deg, #f59e0b, #d97706);
+                  border-radius: 1rem;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  margin: 0 auto 1rem;
+                "
+              >
+                <i
+                  class="fas fa-chart-line"
+                  style="color: white; font-size: 1.5rem"
+                ></i>
+              </div>
+              <h3 style="color: #1e293b; margin: 0.5rem 0; font-size: 1.3rem">
+                Grow
+              </h3>
+              <p style="color: #64748b; font-size: 0.9rem; margin: 0">
+                Together as a team
+              </p>
+            </div>
+          </div>
+
+          <!-- Champions Badge -->
+          <div
+            style="
+              margin-top: 2rem;
+              animation: fadeInScale 1s ease-out 1s backwards;
+            "
+          >
+            <div
+              style="
+                display: inline-flex;
+                align-items: center;
+                gap: 1rem;
+                background: linear-gradient(135deg, #873eff, #720eec);
+                color: white;
+                padding: 1rem 2rem;
+                border-radius: 3rem;
+                font-size: 1.1rem;
+                font-weight: 600;
+                animation: glow 2s ease-in-out infinite;
+                cursor: pointer;
+                transition: all 0.3s ease;
+              "
+              onmouseover="this.style.transform='scale(1.05)'"
+              onmouseout="this.style.transform='scale(1)'"
+            >
+              <i
+                class="fas fa-trophy"
+                style="font-size: 1.5rem; color: #fbbf24"
+              ></i>
+              <span>Performance Champions!</span>
+              <i
+                class="fas fa-trophy"
+                style="font-size: 1.5rem; color: #fbbf24"
+              ></i>
+            </div>
+          </div>
+
+          <!-- Footer Message -->
+          <div
+            style="
+              margin-top: 3rem;
+              text-align: center;
+              animation: slideInFromBottom 1s ease-out 1.3s backwards;
+            "
+          >
+            <p
+              style="
+                color: #64748b;
+                font-size: 1rem;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+              "
+            >
+              Questions? Find me on Slack
+              <i
+                class="fas fa-heart"
+                style="color: #dc2626; animation: float 2s ease-in-out infinite"
+              ></i>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="navigation">
+      <button id="prevBtn" class="nav-btn" onclick="previousSlide()">
+        ← Previous
+      </button>
+      <button id="nextBtn" class="nav-btn" onclick="nextSlide()">Next →</button>
+    </div>
+
+    <script>
+      let currentSlide = 0;
+      const container = document.getElementById("slidesContainer");
+      const slides = document.querySelectorAll(".slide");
+      const totalSlides = slides.length;
+      const progressBar = document.getElementById("progressBar");
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+
+      function updateProgress() {
+        const progress = ((currentSlide + 1) / totalSlides) * 100;
+        progressBar.style.width = progress + "%";
+
+        // Update button visibility
+        if (prevBtn && nextBtn) {
+          prevBtn.style.display = currentSlide === 0 ? "none" : "block";
+          nextBtn.style.display =
+            currentSlide === totalSlides - 1 ? "none" : "block";
+        }
+      }
+
+      function goToSlide(n) {
+        currentSlide = Math.max(0, Math.min(n, totalSlides - 1));
+        container.scrollTo({
+          left: currentSlide * window.innerWidth,
+          behavior: "smooth",
+        });
+        updateProgress();
+      }
+
+      function nextSlide() {
+        goToSlide(currentSlide + 1);
+      }
+
+      function previousSlide() {
+        goToSlide(currentSlide - 1);
+      }
+
+      // Keyboard navigation
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowRight") nextSlide();
+        if (e.key === "ArrowLeft") previousSlide();
+        if (e.key === "Home") goToSlide(0);
+        if (e.key === "End") goToSlide(totalSlides - 1);
+      });
+
+      // Track scroll position
+      container.addEventListener("scroll", () => {
+        const slideWidth = window.innerWidth;
+        const scrollPosition = container.scrollLeft;
+        currentSlide = Math.round(scrollPosition / slideWidth);
+        updateProgress();
+      });
+
+      // Initialize
+      updateProgress();
+
+      // Fullscreen support
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "f" || e.key === "F") {
+          if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+          } else {
+            document.exitFullscreen();
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
