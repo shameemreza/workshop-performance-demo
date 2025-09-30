@@ -1,0 +1,97 @@
+/**
+ * Workshop Performance Demo - Admin Styles
+ * Minimal enhancements to WordPress native UI
+ *
+ * @package Workshop_Performance_Demo
+ * @since 1.0.0
+ */
+
+/* Enhance WordPress native card styling */
+.wrap .card {
+  max-width: none;
+  margin-top: 20px;
+}
+
+.wrap .card h2 {
+  border-bottom: 1px solid #c3c4c7;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.wrap .card h3 {
+  margin-top: 30px;
+  margin-bottom: 15px;
+  color: #1d2327;
+}
+
+.wrap .card h4 {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  color: #50575e;
+}
+
+/* Table enhancements */
+.wp-list-table th {
+  font-weight: 600;
+}
+
+.wp-list-table td .dashicons {
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+  line-height: 1;
+  vertical-align: middle;
+  margin-right: 5px;
+}
+
+/* Code blocks - simple styling */
+pre {
+  background: #f0f0f1;
+  border: 1px solid #c3c4c7;
+  border-radius: 4px;
+  padding: 12px;
+  overflow-x: auto;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre;
+  word-wrap: normal;
+  margin: 15px 0;
+}
+
+/* Button enhancements */
+.button .dashicons {
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+/* Notice improvements */
+.notice p {
+  margin: 0.5em 0;
+  padding: 2px;
+}
+
+/* Description text */
+.wrap .description {
+  font-size: 14px;
+  font-style: normal;
+  color: #646970;
+  margin: 10px 0 20px;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 782px) {
+  .wp-list-table {
+    font-size: 14px;
+  }
+
+  .wp-list-table td,
+  .wp-list-table th {
+    padding: 10px;
+  }
+
+  pre {
+    font-size: 12px;
+    padding: 10px;
+  }
+}
